@@ -363,6 +363,32 @@
       color: var(--text-dimmed);
       font-weight: 500;
       letter-spacing: 0.2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-lang-toggle {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary);
+      padding: 6px 14px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      outline: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-lang-toggle:active {
+      transform: scale(0.95);
+      background: rgba(255, 255, 255, 0.06);
     }
   </style>
 </head>
@@ -375,20 +401,20 @@
       <span class="logo-icon">⇄</span>
     </div>
     <h1>LocalSync Mobile</h1>
-    <p class="subtitle">Scambia file in locale con il tuo PC</p>
+    <p class="subtitle" id="subtitle">Scambia file in locale con il tuo PC</p>
   </header>
 
   <main>
     <!-- Section: Upload File (Phone -> PC) -->
     <section class="card">
-      <h2>
+      <h2 id="sendTitle">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-primary); margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
         Invia file al PC
       </h2>
       <div class="upload-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
         <div class="upload-icon">📤</div>
-        <div class="upload-text">Seleziona Foto o Documento</div>
-        <div class="upload-subtext">Scatta un'immagine o sfoglia i file</div>
+        <div class="upload-text" id="uploadText">Seleziona Foto o Documento</div>
+        <div class="upload-subtext" id="uploadSubtext">Scatta un'immagine o sfoglia i file</div>
         <input type="file" id="fileInput">
       </div>
 
@@ -409,21 +435,22 @@
 
     <!-- Section: Download Files (PC -> Phone) -->
     <section class="card">
-      <h2>
+      <h2 id="downloadTitle">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-secondary); margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         Scarica file dal PC
       </h2>
       <div class="download-list" id="downloadList">
         <div class="empty-state">
           <div class="empty-icon">📁</div>
-          <p>Nessun file condiviso dal PC al momento.</p>
+          <p id="emptyText">Nessun file condiviso dal PC al momento.</p>
         </div>
       </div>
     </section>
   </main>
 
   <footer>
-    <p>Connessione Sicura P2P • Zero Cloud</p>
+    <p id="footerText">Connessione Sicura P2P • Zero Cloud</p>
+    <button class="btn-lang-toggle" id="langToggleBtn">🇬🇧 English</button>
   </footer>
 
   <script>
@@ -435,6 +462,74 @@
     const progressBarFill = document.getElementById('progressBarFill');
     const progressStatus = document.getElementById('progressStatus');
     const downloadList = document.getElementById('downloadList');
+
+    const t = {
+      it: {
+        subtitle: "Scambia file in locale con il tuo PC",
+        sendTitle: "Invia file al PC",
+        uploadText: "Seleziona Foto o Documento",
+        uploadSubtext: "Scatta un'immagine o sfoglia i file",
+        downloadTitle: "Scarica file dal PC",
+        emptyShared: "Nessun file condiviso dal PC al momento.",
+        footerText: "Connessione Sicura P2P • Zero Cloud",
+        downloadBtn: "Scarica",
+        progressStart: "Avvio trasferimento...",
+        progressSent: "Inviati {loaded} di {total}",
+        progressSuccess: "✅ File inviato con successo!",
+        progressError: "❌ Errore di caricamento. Riprova.",
+        progressAbort: "❌ Connessione interrotta.",
+        preparing: "Preparazione file...",
+        langToggle: "🇬🇧 English"
+      },
+      en: {
+        subtitle: "Share files locally with your PC",
+        sendTitle: "Send files to PC",
+        uploadText: "Select Photo or Document",
+        uploadSubtext: "Take a picture or browse files",
+        downloadTitle: "Download files from PC",
+        emptyShared: "No files shared from PC at the moment.",
+        footerText: "Secure P2P Connection • Zero Cloud",
+        downloadBtn: "Download",
+        progressStart: "Starting transfer...",
+        progressSent: "Sent {loaded} of {total}",
+        progressSuccess: "✅ File sent successfully!",
+        progressError: "❌ Upload error. Try again.",
+        progressAbort: "❌ Connection aborted.",
+        preparing: "Preparing file...",
+        langToggle: "🇮🇹 Italiano"
+      }
+    };
+
+    // Determine initial language
+    let currentLang = localStorage.getItem('localSync_lang');
+    if (!currentLang) {
+      currentLang = navigator.language && navigator.language.startsWith('en') ? 'en' : 'it';
+    }
+
+    function updateLanguage() {
+      document.getElementById('subtitle').textContent = t[currentLang].subtitle;
+      
+      const sendTitle = document.getElementById('sendTitle');
+      sendTitle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-primary); margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg> ` + t[currentLang].sendTitle;
+      
+      const downloadTitle = document.getElementById('downloadTitle');
+      downloadTitle.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-secondary); margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> ` + t[currentLang].downloadTitle;
+      
+      document.getElementById('uploadText').textContent = t[currentLang].uploadText;
+      document.getElementById('uploadSubtext').textContent = t[currentLang].uploadSubtext;
+      document.getElementById('footerText').textContent = t[currentLang].footerText;
+      document.getElementById('langToggleBtn').textContent = t[currentLang].langToggle;
+    }
+
+    // Toggle language handler
+    document.getElementById('langToggleBtn').addEventListener('click', () => {
+      currentLang = currentLang === 'it' ? 'en' : 'it';
+      localStorage.setItem('localSync_lang', currentLang);
+      updateLanguage();
+      // Force list re-render
+      lastFilesJson = '';
+      fetchSharedFiles();
+    });
 
     // Parse security token from URL query string
     const urlParams = new URLSearchParams(window.location.search);
@@ -473,7 +568,7 @@
       progressName.textContent = file.name;
       progressPercent.textContent = '0%';
       progressBarFill.style.width = '0%';
-      progressStatus.textContent = 'Preparazione file...';
+      progressStatus.textContent = t[currentLang].preparing;
 
       const formData = new FormData();
       formData.append('file', file);
@@ -485,7 +580,9 @@
           const percent = Math.round((e.loaded / e.total) * 100);
           progressPercent.textContent = percent + '%';
           progressBarFill.style.width = percent + '%';
-          progressStatus.textContent = `Inviati ${formatBytes(e.loaded)} di ${formatBytes(e.total)}`;
+          progressStatus.textContent = t[currentLang].progressSent
+            .replace('{loaded}', formatBytes(e.loaded))
+            .replace('{total}', formatBytes(e.total));
         }
       });
 
@@ -493,19 +590,19 @@
         if (xhr.status === 200) {
           progressPercent.textContent = '100%';
           progressBarFill.style.width = '100%';
-          progressStatus.textContent = '✅ File inviato con successo!';
+          progressStatus.textContent = t[currentLang].progressSuccess;
           fileInput.value = '';
           
           setTimeout(() => {
             progressContainer.style.display = 'none';
           }, 3500);
         } else {
-          progressStatus.textContent = '❌ Errore di caricamento. Riprova.';
+          progressStatus.textContent = t[currentLang].progressError;
         }
       });
 
       xhr.addEventListener('error', () => {
-        progressStatus.textContent = '❌ Connessione interrotta.';
+        progressStatus.textContent = t[currentLang].progressAbort;
       });
 
       xhr.open('POST', `/api/upload?token=${token}`, true);
@@ -519,7 +616,7 @@
         .then(res => res.json())
         .then(files => {
           // Compare as string to avoid rendering matching rows and breaking list entry animations
-          const filesJson = JSON.stringify(files);
+          const filesJson = JSON.stringify(files) + '_' + currentLang;
           if (filesJson === lastFilesJson) return; 
           lastFilesJson = filesJson;
 
@@ -527,7 +624,7 @@
             downloadList.innerHTML = `
               <div class="empty-state">
                 <div class="empty-icon">📁</div>
-                <p>Nessun file condiviso dal PC al momento.</p>
+                <p>${t[currentLang].emptyShared}</p>
               </div>
             `;
             return;
@@ -544,7 +641,7 @@
                   <div class="file-size">${formatBytes(file.size)}</div>
                 </div>
                 <a href="/api/download/${file.id}?token=${token}" download="${file.name}" class="btn-download">
-                  Scarica
+                  ${t[currentLang].downloadBtn}
                 </a>
               </div>
             `;
@@ -555,6 +652,9 @@
           console.error('Errore caricamento lista:', err);
         });
     }
+
+    // Initialize text contents
+    updateLanguage();
 
     // Fetch list on load and poll
     fetchSharedFiles();

@@ -2,6 +2,58 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import './App.css';
 
+// Translation Dictionary
+const t = {
+  it: {
+    subtitle: "Scambia file in locale alla velocità del Wi-Fi",
+    folderBtn: "📁 Cartella LocalSync",
+    connectTitle: "Connetti Dispositivo",
+    activeNetwork: "Rete Attiva:",
+    qrScan: "Scansiona QR per connetterti",
+    portalUrl: "URL del Portale:",
+    copyTooltip: "Clicca per copiare",
+    shareTitle: "Condividi con Dispositivo",
+    dragZoneText: "Trascina file qui o sfoglia",
+    dragZoneSubtext: "Saranno scaricabili dal telefono",
+    sharedTitle: "In Condivisione",
+    emptyShared: "Nessun file condiviso.",
+    emptySharedSub: "Trascina qui i file per inviarli al telefono",
+    receivedTitle: "Ricevuti dal Telefono",
+    emptyReceived: "Ancora nessun file ricevuto.",
+    emptyReceivedSub: "Carica un file dal portale mobile per vederlo apparire qui",
+    openFile: "Apri File",
+    toastCopied: "URL Copiato negli appunti!",
+    dragOverlay: "Rilascia per condividere con il telefono",
+    notificationTitle: "LocalSync",
+    notificationBody: "Ricevuto: {name} ({size})",
+    langToggle: "🇬🇧 English"
+  },
+  en: {
+    subtitle: "Share files locally at Wi-Fi speed",
+    folderBtn: "📁 LocalSync Folder",
+    connectTitle: "Connect Device",
+    activeNetwork: "Active Network:",
+    qrScan: "Scan QR to connect",
+    portalUrl: "Portal URL:",
+    copyTooltip: "Click to copy",
+    shareTitle: "Share with Device",
+    dragZoneText: "Drag files here or browse",
+    dragZoneSubtext: "They will be downloadable from your phone",
+    sharedTitle: "Shared Files",
+    emptyShared: "No files shared.",
+    emptySharedSub: "Drag files here to send them to your phone",
+    receivedTitle: "Received from Phone",
+    emptyReceived: "No files received yet.",
+    emptyReceivedSub: "Upload a file from the mobile portal to see it here",
+    openFile: "Open File",
+    toastCopied: "URL Copied to clipboard!",
+    dragOverlay: "Release to share with phone",
+    notificationTitle: "LocalSync",
+    notificationBody: "Received: {name} ({size})",
+    langToggle: "🇮🇹 Italiano"
+  }
+};
+
 export default function App() {
   const [ips, setIps] = useState([]);
   const [selectedIp, setSelectedIp] = useState('');
@@ -11,6 +63,7 @@ export default function App() {
   const [serverUrl, setServerUrl] = useState('');
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [lang, setLang] = useState(() => localStorage.getItem('localSync_lang') || 'it');
   
   const [sharedFiles, setSharedFiles] = useState([]);
   const [receivedFiles, setReceivedFiles] = useState([]);
@@ -42,9 +95,14 @@ export default function App() {
     const unsubscribe = window.electron.on('file-received', (newFile) => {
       // Add to received state immediately and refresh directory listing
       setReceivedFiles(prev => [newFile, ...prev]);
+      
       // OS level notification
-      new Notification('LocalSync', {
-        body: `Ricevuto: ${newFile.name} (${formatBytes(newFile.size)})`,
+      const bodyText = t[lang].notificationBody
+        .replace('{name}', newFile.name)
+        .replace('{size}', formatBytes(newFile.size));
+        
+      new Notification(t[lang].notificationTitle, {
+        body: bodyText,
         silent: false
       });
     });
@@ -52,7 +110,7 @@ export default function App() {
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [lang]);
 
   // Update server URL when IP, port or token changes
   useEffect(() => {
@@ -116,6 +174,13 @@ export default function App() {
     setTimeout(() => setShowToast(false), 2000);
   };
 
+  // Toggle Language
+  const toggleLanguage = () => {
+    const newLang = lang === 'it' ? 'en' : 'it';
+    setLang(newLang);
+    localStorage.setItem('localSync_lang', newLang);
+  };
+
   // Drag and Drop files handling
   const handleDrag = (e) => {
     e.preventDefault();
@@ -174,9 +239,9 @@ export default function App() {
           <span className="title-bar-text">LocalSync</span>
         </div>
         <div className="title-bar-controls">
-          <button className="control-btn minimize-btn" onClick={() => window.electron.send('window-minimize')} title="Riduci a icona">⎯</button>
-          <button className="control-btn maximize-btn" onClick={() => window.electron.send('window-maximize')} title="Ingrandisci">❑</button>
-          <button className="control-btn close-btn" onClick={() => window.electron.send('window-close')} title="Chiudi">✕</button>
+          <button className="control-btn minimize-btn" onClick={() => window.electron.send('window-minimize')} title={lang === 'it' ? 'Riduci a icona' : 'Minimize'}>⎯</button>
+          <button className="control-btn maximize-btn" onClick={() => window.electron.send('window-maximize')} title={lang === 'it' ? 'Ingrandisci' : 'Maximize'}>❑</button>
+          <button className="control-btn close-btn" onClick={() => window.electron.send('window-close')} title={lang === 'it' ? 'Chiudi' : 'Close'}>✕</button>
         </div>
       </div>
 
@@ -189,12 +254,12 @@ export default function App() {
           <div className="brand-logo">⇄</div>
           <div className="brand-info">
             <h1>LocalSync</h1>
-            <p className="subtitle">Scambia file in locale alla velocità del Wi-Fi</p>
+            <p className="subtitle">{t[lang].subtitle}</p>
           </div>
         </div>
         <div className="header-right">
           <button className="btn btn-secondary" onClick={handleOpenDownloads}>
-            📁 Cartella LocalSync
+            {t[lang].folderBtn}
           </button>
         </div>
       </header>
@@ -203,11 +268,11 @@ export default function App() {
         {/* Connection details panel */}
         <section className="app-panel panel-connection">
           <h2 className="panel-title">
-            <span className="pulse-dot pulse-dot-green"></span> Connetti Dispositivo
+            <span className="pulse-dot pulse-dot-green"></span> {t[lang].connectTitle}
           </h2>
           
           <div className="form-group">
-            <label htmlFor="ip-select">Rete Attiva:</label>
+            <label htmlFor="ip-select">{t[lang].activeNetwork}</label>
             <select
               id="ip-select"
               value={selectedIp}
@@ -226,7 +291,7 @@ export default function App() {
             {qrCodeDataUrl ? (
               <div className="qr-card">
                 <img src={qrCodeDataUrl} alt="QR Code" className="qr-image" />
-                <div className="qr-overlay-text">Scansiona QR per connetterti</div>
+                <div className="qr-overlay-text">{t[lang].qrScan}</div>
               </div>
             ) : (
               <div className="qr-placeholder">Generazione QR...</div>
@@ -234,8 +299,8 @@ export default function App() {
           </div>
 
           <div className="connection-info">
-            <span className="info-label">URL del Portale:</span>
-            <div className="info-value" onClick={handleCopyUrl} title="Clicca per copiare">
+            <span className="info-label">{t[lang].portalUrl}</span>
+            <div className="info-value" onClick={handleCopyUrl} title={t[lang].copyTooltip}>
               <span>{serverUrl}</span>
               <span className="copy-hint">📋</span>
             </div>
@@ -245,7 +310,7 @@ export default function App() {
         {/* Share files section */}
         <section className="app-panel panel-share">
           <h2 className="panel-title">
-            <span className="pulse-dot pulse-dot-indigo"></span> Condividi con Dispositivo
+            <span className="pulse-dot pulse-dot-indigo"></span> {t[lang].shareTitle}
           </h2>
 
           <div
@@ -258,18 +323,18 @@ export default function App() {
           >
             <div className="drop-zone-content">
               <span className="drop-icon">➕</span>
-              <span className="drop-text">Trascina file qui o sfoglia</span>
-              <span className="drop-subtext">Saranno scaricabili dal telefono</span>
+              <span className="drop-text">{t[lang].dragZoneText}</span>
+              <span className="drop-subtext">{t[lang].dragZoneSubtext}</span>
             </div>
           </div>
 
           <div className="shared-list-container">
-            <h3>In Condivisione ({sharedFiles.length})</h3>
+            <h3>{t[lang].sharedTitle} ({sharedFiles.length})</h3>
             {sharedFiles.length === 0 ? (
               <div className="panel-empty-state">
                 <span className="empty-emoji">📤</span>
-                <p>Nessun file condiviso.</p>
-                <p className="empty-sub">Trascina qui i file per inviarli al telefono</p>
+                <p>{t[lang].emptyShared}</p>
+                <p className="empty-sub">{t[lang].emptySharedSub}</p>
               </div>
             ) : (
               <div className="shared-list">
@@ -284,7 +349,7 @@ export default function App() {
                     <button
                       className="btn-action btn-delete"
                       onClick={() => handleRemoveShared(file.id)}
-                      title="Interrompi condivisione"
+                      title={lang === 'it' ? 'Interrompi condivisione' : 'Stop sharing'}
                     >
                       ✕
                     </button>
@@ -299,9 +364,9 @@ export default function App() {
         <section className="app-panel panel-received">
           <div className="panel-header-row">
             <h2 className="panel-title">
-              <span className="pulse-dot pulse-dot-violet"></span> Ricevuti dal Telefono
+              <span className="pulse-dot pulse-dot-violet"></span> {t[lang].receivedTitle}
             </h2>
-            <button className="btn-icon-refresh" onClick={refreshReceivedFiles} title="Aggiorna lista">
+            <button className="btn-icon-refresh" onClick={refreshReceivedFiles} title={lang === 'it' ? 'Aggiorna lista' : 'Refresh list'}>
               🔄
             </button>
           </div>
@@ -310,8 +375,8 @@ export default function App() {
             {receivedFiles.length === 0 ? (
               <div className="panel-empty-state">
                 <span className="empty-emoji">📱</span>
-                <p>Ancora nessun file ricevuto.</p>
-                <p className="empty-sub">Carica un file dal portale mobile per vederlo apparire qui</p>
+                <p>{t[lang].emptyReceived}</p>
+                <p className="empty-sub">{t[lang].emptyReceivedSub}</p>
               </div>
             ) : (
               <div className="received-list">
@@ -327,7 +392,7 @@ export default function App() {
                         <span>{file.time}</span>
                       </div>
                     </div>
-                    <span className="btn-action-open" title="Apri File">
+                    <span className="btn-action-open" title={t[lang].openFile}>
                       👁️
                     </span>
                   </div>
@@ -337,6 +402,13 @@ export default function App() {
           </div>
         </section>
       </main>
+
+      {/* Language Switcher Footer */}
+      <footer className="app-footer-bar">
+        <button className="btn-lang-toggle" onClick={toggleLanguage}>
+          {t[lang].langToggle}
+        </button>
+      </footer>
 
       {/* Full screen Drag Overlay */}
       {dragActive && (
@@ -348,7 +420,7 @@ export default function App() {
         >
           <div className="overlay-box">
             <span className="overlay-icon">📥</span>
-            <span className="overlay-text">Rilascia per condividere con il telefono</span>
+            <span className="overlay-text">{t[lang].dragOverlay}</span>
           </div>
         </div>
       )}
@@ -356,7 +428,7 @@ export default function App() {
       {/* Copy feedback Toast */}
       {showToast && (
         <div className="toast-notification">
-          URL Copiato negli appunti!
+          {t[lang].toastCopied}
         </div>
       )}
     </div>
