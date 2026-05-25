@@ -1,5 +1,5 @@
 {
-  "name": "dropsync",
+  "name": "localsync",
   "version": "1.0.0",
   "description": "Local P2P File Sharing App",
   "main": "main.js",
@@ -9,7 +9,7 @@
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5173 && electron .",
     "build": "vite build",
-    "package": "npm run build && electron-builder"
+    "package": "npm.cmd run build && electron-builder"
   },
   "dependencies": {
     "cors": "^2.8.5",
