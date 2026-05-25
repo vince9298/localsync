@@ -1,0 +1,32 @@
+{
+  "name": "dropsync",
+  "version": "1.0.0",
+  "description": "Local P2P File Sharing App",
+  "main": "main.js",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "concurrently \"npm.cmd run dev:vite\" \"npm.cmd run dev:electron\"",
+    "dev:vite": "vite",
+    "dev:electron": "wait-on http://localhost:5173 && electron .",
+    "build": "vite build",
+    "package": "npm run build && electron-builder"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "qrcode": "^1.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.0.5",
+    "wait-on": "^8.0.1"
+  }
+}

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalSync Mobile Portal</title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-color: #050608;
+      --card-bg: rgba(18, 20, 29, 0.5);
+      --card-border: rgba(255, 255, 255, 0.05);
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-dimmed: #64748b;
+
+      --accent-primary: #10b981; /* Emerald */
+      --accent-primary-glow: rgba(16, 185, 129, 0.12);
+      
+      --accent-secondary: #4f46e5; /* Indigo */
+      --accent-secondary-glow: rgba(79, 70, 229, 0.15);
+      
+      --radius-lg: 20px;
+      --radius-md: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 16px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Drift background glow blobs */
+    .glow-bg {
+      position: fixed;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent-primary-glow) 0%, transparent 70%);
+      top: -60px;
+      right: -60px;
+      z-index: -1;
+      pointer-events: none;
+      animation: float-slow 15s infinite alternate ease-in-out;
+    }
+
+    .glow-bg-2 {
+      position: fixed;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent-secondary-glow) 0%, transparent 70%);
+      bottom: -100px;
+      left: -100px;
+      z-index: -1;
+      pointer-events: none;
+      animation: float-slow-reverse 18s infinite alternate ease-in-out;
+    }
+
+    @keyframes float-slow {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(30px, -20px); }
+    }
+
+    @keyframes float-slow-reverse {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-30px, 30px); }
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      margin-top: 10px;
+    }
+
+    .logo-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.25);
+    }
+
+    .logo-icon {
+      font-size: 20px;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 2px;
+      background: linear-gradient(to right, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    h2 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+    }
+
+    /* Premium interactive Upload Area */
+    .upload-area {
+      border: 2px dashed rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-md);
+      padding: 32px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      background: rgba(255, 255, 255, 0.005);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-area:active {
+      transform: scale(0.98);
+      border-color: var(--accent-primary);
+      background: rgba(16, 185, 129, 0.03);
+    }
+
+    .upload-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      transition: transform 0.3s ease;
+    }
+
+    .upload-area:active .upload-icon {
+      transform: translateY(-4px) scale(1.05);
+    }
+
+    .upload-text {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 3px;
+      color: var(--text-primary);
+    }
+
+    .upload-subtext {
+      font-size: 11px;
+      color: var(--text-dimmed);
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    /* Active Upload Item CSS */
+    .upload-progress-container {
+      margin-top: 14px;
+      display: none;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .progress-item {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .progress-name {
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+    }
+
+    .progress-percent {
+      color: var(--accent-primary);
+      font-weight: 700;
+    }
+
+    .progress-bar-wrapper {
+      background: rgba(255, 255, 255, 0.06);
+      height: 5px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar-fill {
+      background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+      height: 100%;
+      width: 0%;
+      transition: width 0.1s ease;
+    }
+
+    .progress-status {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    /* Shared Files List from PC */
+    .download-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 380px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px 10px;
+      color: var(--text-dimmed);
+      font-size: 12px;
+    }
+
+    .empty-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+      opacity: 0.25;
+    }
+
+    /* Custom Row items with slide animation */
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--card-border);
+      transition: all 0.2s ease;
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(8px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .file-item:active {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.08);
+      transform: scale(0.99);
+    }
+
+    .file-details {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      max-width: 70%;
+    }
+
+    .file-name {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text-primary);
+    }
+
+    .file-size {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* Visual Premium Button */
+    .btn-download {
+      background: linear-gradient(135deg, var(--accent-secondary), #3b82f6);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-download:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.1);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 10px;
+      color: var(--text-dimmed);
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-bg"></div>
+  <div class="glow-bg-2"></div>
+
+  <header>
+    <div class="logo-container">
+      <span class="logo-icon">⇄</span>
+    </div>
+    <h1>LocalSync Mobile</h1>
+    <p class="subtitle">Scambia file in locale con il tuo PC</p>
+  </header>
+
+  <main>
+    <!-- Section: Upload File (Phone -> PC) -->
+    <section class="card">
+      <h2>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-primary); margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        Invia file al PC
+      </h2>
+      <div class="upload-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
+        <div class="upload-icon">📤</div>
+        <div class="upload-text">Seleziona Foto o Documento</div>
+        <div class="upload-subtext">Scatta un'immagine o sfoglia i file</div>
+        <input type="file" id="fileInput">
+      </div>
+
+      <!-- Upload Progress -->
+      <div class="upload-progress-container" id="progressContainer">
+        <div class="progress-item">
+          <div class="progress-info">
+            <span class="progress-name" id="progressName">file.jpg</span>
+            <span class="progress-percent" id="progressPercent">0%</span>
+          </div>
+          <div class="progress-bar-wrapper">
+            <div class="progress-bar-fill" id="progressBarFill"></div>
+          </div>
+          <div class="progress-status" id="progressStatus">Avvio trasferimento...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: Download Files (PC -> Phone) -->
+    <section class="card">
+      <h2>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-secondary); margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        Scarica file dal PC
+      </h2>
+      <div class="download-list" id="downloadList">
+        <div class="empty-state">
+          <div class="empty-icon">📁</div>
+          <p>Nessun file condiviso dal PC al momento.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Connessione Sicura P2P • Zero Cloud</p>
+  </footer>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const dropArea = document.getElementById('dropArea');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressName = document.getElementById('progressName');
+    const progressPercent = document.getElementById('progressPercent');
+    const progressBarFill = document.getElementById('progressBarFill');
+    const progressStatus = document.getElementById('progressStatus');
+    const downloadList = document.getElementById('downloadList');
+
+    // Parse security token from URL query string
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token') || '';
+
+    // Utility size converter
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // File type icon resolver
+    function getFileIcon(fileName) {
+      const ext = fileName.split('.').pop().toLowerCase();
+      if (['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'heic'].includes(ext)) return '🖼️';
+      if (['mp4', 'mov', 'avi', 'mkv', 'webm'].includes(ext)) return '🎥';
+      if (['mp3', 'wav', 'flac', 'ogg', 'm4a'].includes(ext)) return '🎵';
+      if (['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'md', 'csv'].includes(ext)) return '📄';
+      if (['zip', 'rar', 'tar', 'gz', '7z'].includes(ext)) return '📦';
+      return '📁';
+    }
+
+    // Trigger on file pick
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleUpload(e.target.files[0]);
+      }
+    });
+
+    // Custom upload form XHR handler
+    function handleUpload(file) {
+      progressContainer.style.display = 'block';
+      progressName.textContent = file.name;
+      progressPercent.textContent = '0%';
+      progressBarFill.style.width = '0%';
+      progressStatus.textContent = 'Preparazione file...';
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const xhr = new XMLHttpRequest();
+      
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          progressPercent.textContent = percent + '%';
+          progressBarFill.style.width = percent + '%';
+          progressStatus.textContent = `Inviati ${formatBytes(e.loaded)} di ${formatBytes(e.total)}`;
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) {
+          progressPercent.textContent = '100%';
+          progressBarFill.style.width = '100%';
+          progressStatus.textContent = '✅ File inviato con successo!';
+          fileInput.value = '';
+          
+          setTimeout(() => {
+            progressContainer.style.display = 'none';
+          }, 3500);
+        } else {
+          progressStatus.textContent = '❌ Errore di caricamento. Riprova.';
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        progressStatus.textContent = '❌ Connessione interrotta.';
+      });
+
+      xhr.open('POST', `/api/upload?token=${token}`, true);
+      xhr.send(formData);
+    }
+
+    // Poll files to download
+    let lastFilesJson = '';
+    function fetchSharedFiles() {
+      fetch(`/api/files?token=${token}`)
+        .then(res => res.json())
+        .then(files => {
+          // Compare as string to avoid rendering matching rows and breaking list entry animations
+          const filesJson = JSON.stringify(files);
+          if (filesJson === lastFilesJson) return; 
+          lastFilesJson = filesJson;
+
+          if (files.length === 0) {
+            downloadList.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-icon">📁</div>
+                <p>Nessun file condiviso dal PC al momento.</p>
+              </div>
+            `;
+            return;
+          }
+
+          let html = '';
+          files.forEach(file => {
+            html += `
+              <div class="file-item">
+                <div class="file-details">
+                  <div class="file-name" title="${file.name}">
+                    ${getFileIcon(file.name)} ${file.name}
+                  </div>
+                  <div class="file-size">${formatBytes(file.size)}</div>
+                </div>
+                <a href="/api/download/${file.id}?token=${token}" download="${file.name}" class="btn-download">
+                  Scarica
+                </a>
+              </div>
+            `;
+          });
+          downloadList.innerHTML = html;
+        })
+        .catch(err => {
+          console.error('Errore caricamento lista:', err);
+        });
+    }
+
+    // Fetch list on load and poll
+    fetchSharedFiles();
+    setInterval(fetchSharedFiles, 3000);
+  </script>
+</body>
+</html>
