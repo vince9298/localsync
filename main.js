@@ -154,6 +154,7 @@ function createWindow() {
     minWidth: 880,
     minHeight: 660,
     frame: false, // Frameless window for custom styling
+    icon: path.join(__dirname, 'public', 'icon.png'), // Runtime window icon
     backgroundColor: '#050608',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
