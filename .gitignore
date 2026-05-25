@@ -9,6 +9,7 @@ package-lock.json
 dist/
 build/
 out/
+release/
 
 # IDE / System
 .vscode/
