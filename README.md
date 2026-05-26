@@ -2,7 +2,6 @@
 
 LocalSync è un'applicazione desktop per lo scambio rapido di file in locale tra il tuo computer e i dispositivi mobili (o altri PC) connessi alla stessa rete Wi-Fi o hotspot. 
 
-L'applicazione funziona interamente offline e non richiede alcuna connessione a internet.
 
 ## Caratteristiche
 
